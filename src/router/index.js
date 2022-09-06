@@ -16,15 +16,31 @@ const routes = [
       {
         path: '/category/sub/:id',
         component: () => import('@/views/category/sub')
+      },
+      {
+        path: '/product/:id',
+        component: () => import('@/views/goods/index')
+      },
+      {
+        path: '/cart',
+        component: () => import('@/views/cart/index')
       }
     ]
-  }
+  },
+  {
+    path: '/login',
+    component: () => import('@/views/login')
+  },
+  { path: '/login/callback', component: () => import('@/views/login/callback') }
 ]
 
 const router = createRouter({
   // 使用hash的路由模式
   history: createWebHashHistory(),
-  routes
+  routes,
+  scrollBehavior () {
+    return { left: 0, top: 0 }
+  }
 })
 
 export default router

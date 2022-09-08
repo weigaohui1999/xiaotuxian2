@@ -1,69 +1,75 @@
 <template>
-  <div class="home-category" @mouseleave="categoryId === null">
+  <div class="home-category" @mouseleave="categoryId=null">
     <ul class="menu">
-      <li :class="{active: categoryId === item.id}" v-for="item in menuList" :key="item.id" @mousemove="categoryId = item.id">
-        <RouterLink :to="`/category/${item.id}`">{{item.name}}</RouterLink>
+      <li :class="{active:categoryId&&categoryId===item.id}" v-for="item in menuList" :key="item.id" @mouseenter="categoryId=item.id">
+        <RouterLink :to="`/category/${item.id}`">{{ item.name }}</RouterLink>
         <template v-if="item.children">
-          <RouterLink v-for="sub in item.children" :to="`/category/sub/${sub.id}`" :key="sub.id">{{sub.name}}</RouterLink>
+          <RouterLink
+            v-for="sub in item.children"
+            :key="sub.id"
+            :to="`/category/sub/${sub.id}`"
+            >{{ sub.name }}</RouterLink
+          >
         </template>
-
+        <!-- 骨架 -->
         <template v-else>
-          <XtxSkeleton width="60px" height="18px" style="margin-right:5px" bg="rgba(255,255,255,0.2)" />
-          <XtxSkeleton width="50px" height="18px" bg="rgba(255,255,255,0.2)" />
+          <XtxSkeleton height="18px" width="60px" bg="rgba(255,255,255,0.2)" style="margin-right:5px" />
+          <XtxSkeleton height="18px" width="50px" bg="rgba(255,255,255,0.2)"/>
         </template>
       </li>
     </ul>
     <!-- 弹层 -->
-
     <div class="layer">
-      <div class="layer">
-        <h4 v-if="currCategory">{{currCategory.id==='brand'?'品牌':'分类'}}推荐 <small>根据您的购买或浏览记录推荐</small></h4>
-        <ul v-if="currCategory && currCategory.goods && currCategory.goods.length">
-          <li v-for="item in currCategory.goods" :key="item.id">
-            <RouterLink to="/">
-              <img :src="item.picture" alt="">
-              <div class="info">
-                <p class="name ellipsis-2">{{item.name}}</p>
-                <p class="desc ellipsis">{{item.desc}}</p>
-                <p class="price"><i>¥</i>{{item.price}}</p>
-              </div>
-            </RouterLink>
-          </li>
-        </ul>
-        <ul v-if="currCategory && currCategory.brands && currCategory.brands.length">
-          <li class="brand" v-for="item in currCategory.brands" :key="item.id">
-            <RouterLink to="/">
-              <img :src="item.picture" alt="">
-              <div class="info">
-                <p class="place"><i class="iconfont icon-dingwei"></i>{{item.place}}</p>
-                <p class="name ellipsis">{{item.name}}</p>
-                <p class="desc ellipsis-2">{{item.desc}}</p>
-              </div>
-            </RouterLink>
-          </li>
-        </ul>
-      </div>
+      <h4>{{currCategory&&currCategory.id==='brand'?'品牌':'分类'}}推荐 <small>根据您的购买或浏览记录推荐</small></h4>
+      <!-- 商品 -->
+      <ul v-if="currCategory && currCategory.goods">
+        <li v-for="item in currCategory.goods" :key="item.id">
+          <RouterLink to="/">
+            <img :src="item.picture" alt="">
+            <div class="info">
+              <p class="name ellipsis-2">{{item.name}}</p>
+              <p class="desc ellipsis">{{item.desc}}</p>
+              <p class="price"><i>¥</i>{{item.price}}</p>
+            </div>
+          </RouterLink>
+        </li>
+      </ul>
+      <!-- 品牌 -->
+      <ul v-if="currCategory && currCategory.brands">
+        <li class="brand" v-for="brand in currCategory.brands" :key="brand.id">
+          <RouterLink to="/">
+            <img :src="brand.picture" alt="">
+            <div class="info">
+              <p class="place"><i class="iconfont icon-dingwei"></i>{{brand.place}}</p>
+              <p class="name ellipsis">{{brand.name}}</p>
+              <p class="desc ellipsis-2">{{brand.desc}}</p>
+            </div>
+          </RouterLink>
+        </li>
+      </ul>
     </div>
   </div>
 </template>
 
 <script>
-import { useStore } from 'vuex'
 import { computed, reactive, ref } from 'vue'
+import { useStore } from 'vuex'
 import { findBrand } from '@/api/home'
-
 export default {
   name: 'HomeCategory',
   setup () {
     const store = useStore()
+    // 最终使用的数据 = 9个分类() + 1个品牌
     const brand = reactive({
       id: 'brand',
       name: '品牌',
       children: [{ id: 'brand-children', name: '品牌推荐' }],
+      // 品牌列表
       brands: []
     })
     const menuList = computed(() => {
-      const list = store.state.category.list.map(item => {
+      // 得到9个分类切每个一级分类下的子分类只有两个
+      const list = store.state.category.list.map((item) => {
         return {
           id: item.id,
           name: item.name,
@@ -75,20 +81,23 @@ export default {
       return list
     })
 
+    // 得到弹出层的推荐商品数据
     const categoryId = ref(null)
     const currCategory = computed(() => {
       return menuList.value.find(item => item.id === categoryId.value)
     })
 
-    findBrand(6).then(data => {
+    // 获取品牌数据，尽量不用使用async再setup上
+    findBrand().then(data => {
       brand.brands = data.result
     })
+
     return { menuList, categoryId, currCategory }
   }
 }
 </script>
 
-<style lang="less" scoped>
+<style scoped lang='less'>
 .home-category {
   width: 250px;
   height: 500px;
@@ -100,7 +109,7 @@ export default {
       padding-left: 40px;
       height: 50px;
       line-height: 50px;
-      &:hover {
+      &:hover,&.active {
         background: @xtxColor;
       }
       a {
@@ -112,11 +121,11 @@ export default {
       }
     }
   }
-
-  .layer {
+  // 弹出层样式
+    .layer {
     width: 990px;
     height: 500px;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255,255,255,0.8);
     position: absolute;
     left: 250px;
     top: 0;
@@ -155,8 +164,8 @@ export default {
             background: #e3f9f4;
           }
           img {
-            width: 95px;
-            height: 95px;
+              width: 95px;
+              height: 95px;
           }
           .info {
             padding-left: 10px;
@@ -179,6 +188,7 @@ export default {
           }
         }
       }
+      // 品牌的样式
       li.brand {
         height: 180px;
         a {
@@ -205,6 +215,7 @@ export default {
     }
   }
 }
+// 骨架动画
 .xtx-skeleton {
   animation: fade 1s linear infinite alternate;
 }

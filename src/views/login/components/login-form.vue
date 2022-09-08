@@ -91,15 +91,11 @@ import { userAccountLogin, userMobileLogin, userMobileLoginMsg } from '@/api/use
 import { useStore } from 'vuex'
 import { useRoute, useRouter } from 'vue-router'
 import { useIntervalFn } from '@vueuse/core'
-
 export default {
   name: 'LoginForm',
   components: { Form, Field },
   setup () {
     // 切换短信登录
-    const store = useStore()
-    const router = useRouter()
-    const route = useRoute()
     const isMsgLogin = ref(false)
     // 表单数据对象
     const form = reactive({
@@ -137,37 +133,15 @@ export default {
       // Form组件提供了一个 resetForm 函数清除校验结果
       formCom.value.resetForm()
     })
-    // 导入vue实例
-    // const { proxy } = getCurrentInstance()
-    // pause 暂停 resume 开始
-    // useIntervalFn(回调函数,执行间隔,是否立即开启)
-    const time = ref(0)
-    const { pause, resume } = useIntervalFn(() => {
-      time.value--
-      if (time.value <= 0) {
-        pause()
-      }
-    }, 1000, false)
-    onUnmounted(() => {
-      pause()
-    })
-    const send = async () => {
-      const valid = mySchema.mobile(form.mobile)
-      if (valid === true) {
-        // 通过
-        if (time.value === 0) {
-          // 没有倒计时才可以发送
-          await userMobileLoginMsg(form.mobile)
-          Message({ type: 'success', text: '发送成功' })
-          time.value = 60
-          resume()
-        }
-      } else {
-        // 失败，使用vee的错误函数显示错误信息 setFieldError(字段,错误信息)
-        formCom.value.setFieldError('mobile', valid)
-      }
-    }
 
+    // setup中获取组件实例 proxy
+    // const { proxy } = getCurrentInstance()
+    // proxy.$message({ text: '111' })
+
+    // 需要在点击登录的时候对整体表单进行校验
+    const store = useStore()
+    const router = useRouter()
+    const route = useRoute()
     const login = async () => {
       // Form组件提供了一个 validate 函数作为整体表单校验，当是返回的是一个promise
       const valid = await formCom.value.validate()
@@ -208,6 +182,47 @@ export default {
         }
       }
     }
+
+    // pause 暂停 resume 开始
+    // useIntervalFn(回调函数,执行间隔,是否立即开启)
+    const time = ref(0)
+    const { pause, resume } = useIntervalFn(() => {
+      time.value--
+      if (time.value <= 0) {
+        pause()
+      }
+    }, 1000, false)
+    onUnmounted(() => {
+      pause()
+    })
+
+    // 1. 发送验证码
+    // 1.1 绑定发送验证码按钮点击事件
+    // 1.2 校验手机号，如果成功才去发送短信（定义API），请求成功开启60s的倒计时，不能再次点击，倒计时结束恢复
+    // 1.3 如果失败，失败的校验样式显示出来
+    const send = async () => {
+      const valid = mySchema.mobile(form.mobile)
+      if (valid === true) {
+        // 通过
+        if (time.value === 0) {
+        // 没有倒计时才可以发送
+          await userMobileLoginMsg(form.mobile)
+          Message({ type: 'success', text: '发送成功' })
+          time.value = 60
+          resume()
+        }
+      } else {
+        // 失败，使用vee的错误函数显示错误信息 setFieldError(字段,错误信息)
+        formCom.value.setFieldError('mobile', valid)
+      }
+    }
+
+    // 初始化QQ登录按钮 （官方）
+    // 1. 准备span有id = qqLoginBtn
+    // 2. QC.Login({btnId:"qqLoginBtn"})
+    // onMounted(() => {
+    //   QC.Login({ btnId: 'qqLoginBtn' })
+    // })
 
     return { isMsgLogin, form, schema: mySchema, formCom, login, send, time }
   }

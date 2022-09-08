@@ -3,21 +3,24 @@
     <div class="container">
       <div class="head">
         <h3>{{ title }}<small>{{ subTitle }}</small></h3>
+        <!-- 右上角插槽 -->
         <slot name="right" />
       </div>
+      <!-- 默认插槽，面板内容 -->
       <slot />
     </div>
   </div>
 </template>
-
 <script>
 export default {
   name: 'HomePanel',
   props: {
+    // 标题
     title: {
       type: String,
       default: ''
     },
+    // 副标题
     subTitle: {
       type: String,
       default: ''
@@ -25,8 +28,7 @@ export default {
   }
 }
 </script>
-
-<style scoped lang='less'>
+<style scoped lang="less">
 .home-panel {
   background-color: #fff;
   .head {

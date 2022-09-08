@@ -1,42 +1,40 @@
 <template>
   <XtxBread>
     <XtxBreadItem to="/">首页</XtxBreadItem>
-    <XtxBreadItem v-if="category.top" :to="`/category/${category.top.id}`">{{category.top.name}}</XtxBreadItem>
+    <XtxBreadItem :key="category.top.id" v-if="category.top" :to="`/category/${category.top.id}`">{{category.top.name}}</XtxBreadItem>
     <Transition name="fade-right" mode="out-in">
-      <XtxBreadItem v-if="category.sub" :key="category.sub.id">{{category.sub.name}}</XtxBreadItem>
+      <XtxBreadItem :key="category.sub.id" v-if="category.sub">{{category.sub.name}}</XtxBreadItem>
     </Transition>
   </XtxBread>
 </template>
-
 <script>
-import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
+import { useRoute } from 'vue-router'
 import { computed } from 'vue'
-
 export default {
-  name: 'sub-bread',
+  name: 'SubBread',
   setup () {
+    // 通过计算属性从vuex获取顶级和二级类目信息
+    // 数据对象：{top:{id,name},sub:{id:name}}
     const route = useRoute()
     const store = useStore()
     const category = computed(() => {
-      const obj = {}
+      const cate = {}
+      // 完成获取数据逻辑
       store.state.category.list.forEach(top => {
-        top.children && top.children.forEach(sub => {
-          if (sub.id === route.params.id) {
-            // 设置二级类目
-            obj.sub = { id: sub.id, name: sub.name }
-            // 设置一级类目
-            obj.top = { id: top.id, name: top.name }
+        if (top.children) {
+          const sub = top.children.find(sub => sub.id === route.params.id)
+          if (sub) {
+            cate.top = { id: top.id, name: top.name }
+            cate.sub = { id: sub.id, name: sub.name }
           }
-        })
+        }
       })
-      return obj
+      return cate
     })
+
     return { category }
   }
 }
 </script>
-
-<style scoped>
-
-</style>
+<style scoped lang="less"></style>

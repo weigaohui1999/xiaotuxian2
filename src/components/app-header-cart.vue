@@ -1,23 +1,26 @@
 <template>
   <div class="cart">
-    <RouterLink to="/cart" class="curr">
-      <i class="iconfont icon-cart"></i><em>{{$store.getters['cart/validTotal']}}</em>
+    <!-- 购物车图标 -->
+    <RouterLink class="curr" to="/cart">
+      <i class="iconfont icon-cart"></i>
+      <em>{{$store.getters['cart/validTotal']}}</em>
     </RouterLink>
-    <div class="layer" v-if="$store.getters['cart/validTotal']&&$route.path!=='/cart'">
+    <!-- 购物车弹出层 -->
+    <div class="layer" v-if="$store.getters['cart/validTotal']>0&&$route.path!=='/cart'">
       <div class="list">
-        <div class="item" v-for="item in $store.getters['cart/validList']" :key="item.skuId">
-          <RouterLink :to="`/product/${item.id}`">
-          <img :src="item.picture" alt="">
+        <div class="item" v-for="goods in $store.getters['cart/validList']" :key="goods.skuId">
+          <RouterLink :to="`/product/${goods.id}`">
+            <img :src="goods.picture" alt="" />
             <div class="center">
-              <p class="name ellipsis-2">{{item.name}}</p>
-              <p class="attr ellipsis">{{item.attrsText}}</p>
+              <p class="name ellipsis-2">{{goods.name}}</p>
+              <p class="attr ellipsis">{{goods.attrsText}}</p>
             </div>
             <div class="right">
-              <p class="price">&yen;{{item.nowPrice}}</p>
-              <p class="count">x{{item.count}}</p>
+              <p class="price">&yen;{{goods.nowPrice}}</p>
+              <p class="count">x{{goods.count}}</p>
             </div>
           </RouterLink>
-          <i class="iconfont icon-close-new" @click="deleteCart(item.skuId)"></i>
+          <i @click="deleteCart(goods.skuId)" class="iconfont icon-close-new"></i>
         </div>
       </div>
       <div class="foot">
@@ -25,29 +28,27 @@
           <p>共 {{$store.getters['cart/validTotal']}} 件商品</p>
           <p>&yen;{{$store.getters['cart/validAmount']}}</p>
         </div>
-        <XtxButton type="plain" @click="$router.push('/cart')">去购物车结算</XtxButton>
+        <XtxButton @click="$router.push('/cart')" type="plain">去购物车结算</XtxButton>
       </div>
     </div>
   </div>
 </template>
 <script>
 import { useStore } from 'vuex'
-import Message from '@/components/library/Message'
-
+// import Message from './library/Message'
 export default {
   name: 'AppHeaderCart',
   setup () {
     const store = useStore()
-    store.dispatch('cart/findCartList')
+    store.dispatch('cart/findCart').then(() => {
+      // Message({ type: 'success', text: '更新本地购物车成功' })
+    })
 
-    // 删除
+    // 删除函数
     const deleteCart = (skuId) => {
-      store.dispatch('cart/deleteCart', skuId).then(() => {
-        Message({ type: 'success', text: '删除成功' })
-      }).catch(e => {
-        Message({ type: 'error', text: '删除失败' })
-      })
+      store.dispatch('cart/deleteCart', skuId)
     }
+
     return { deleteCart }
   }
 }
@@ -55,6 +56,7 @@ export default {
 <style scoped lang="less">
 .cart {
   width: 50px;
+  // 加下限制
   position: relative;
   z-index: 600;
   .curr {
@@ -80,12 +82,14 @@ export default {
       font-family: Arial;
     }
   }
+  // 鼠标经过显示弹层
   &:hover {
     .layer {
       opacity: 1;
       transform: none
     }
   }
+  // 弹层样式
   .layer {
     opacity: 0;
     transition: all .4s .2s;
@@ -157,12 +161,12 @@ export default {
       padding: 10px 0;
       position: relative;
       i {
-        position: absolute;
-        bottom: 38px;
-        right: 0;
-        opacity: 0;
-        color: #666;
-        transition: all .5s;
+          position: absolute;
+          bottom: 38px;
+          right: 0;
+          opacity: 0;
+          color: #666;
+          transition: all .5s;
       }
       &:hover {
         i {

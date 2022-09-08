@@ -3,22 +3,22 @@
     <HomePanel :title="cate.name" v-for="cate in list" :key="cate.id">
       <template v-slot:right>
         <div class="sub">
-          <RouterLink v-for="sub in cate.children" :key="sub.id" :to="`/product/sub/${sub.id}`">{{sub.name}}</RouterLink>
+          <RouterLink v-for="sub in cate.children" :key="sub.id" :to="`/category/sub/${sub.id}`">{{sub.name}}</RouterLink>
         </div>
-        <XtxMore />
+        <XtxMore :path="`/category/${cate.id}`" />
       </template>
       <div class="box">
-        <RouterLink class="cover" to="/">
-          <img v-lazyload="cate.picture" alt="">
+        <RouterLink class="cover" :to="`/category/${cate.id}`">
+          <img v-lazy="cate.picture" alt="">
           <strong class="label">
-          <span>{{cate.name}}馆</span>
-          <span>{{cate.saleInfo}}</span>
+            <span>{{cate.name}}馆</span>
+            <span>{{cate.saleInfo}}</span>
           </strong>
         </RouterLink>
         <ul class="goods-list">
-        <li v-for="item in cate.goods" :key="item.id">
-          <HomeGoods :goods="item" />
-        </li>
+          <li v-for="item in cate.goods" :key="item.id">
+            <HomeGoods :goods="item" />
+          </li>
         </ul>
       </div>
     </HomePanel>
@@ -69,6 +69,7 @@ export default {
       img {
         width: 100%;
         height: 100%;
+        object-fit: cover;
       }
       .label {
         width: 188px;

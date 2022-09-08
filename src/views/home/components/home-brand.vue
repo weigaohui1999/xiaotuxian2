@@ -4,39 +4,44 @@
       <a @click="toggle(-1)" :class="{disabled:index===0}" href="javascript:;" class="iconfont icon-angle-left prev"></a>
       <a @click="toggle(1)" :class="{disabled:index===1}" href="javascript:;" class="iconfont icon-angle-right next"></a>
     </template>
-    <div class="box" ref="target">
+    <div ref="target" class="box">
       <Transition name="fade">
-      <ul v-if="brands.length" class="list" :style="{transform:`translateX(${-index*1240}px)`}">
-        <li v-for="i in brands" :key="i">
-          <RouterLink to="/">
-            <img :src="i.picture" alt="">
-          </RouterLink>
-        </li>
-      </ul>
-      <div v-else class="skeleton">
-        <XtxSkeleton class="item" v-for="i in 5" :key="i" animated bg="#e4e4e4" width="240px" height="305px"/>
-      </div>
+        <ul v-if="brands.length" class="list" :style="{transform:`translateX(${-index*1240}px)`}">
+          <li v-for="item in brands" :key="item.id">
+            <RouterLink to="/">
+              <img :src="item.picture" alt="">
+            </RouterLink>
+          </li>
+        </ul>
+        <div v-else class="skeleton">
+          <XtxSkeleton class="item" v-for="i in 5" :key="i" animated bg="#e4e4e4" width="240px" height="305px"/>
+        </div>
       </Transition>
     </div>
   </HomePanel>
 </template>
 
 <script>
-import HomePanel from './home-panel'
 import { ref } from 'vue'
+import HomePanel from './home-panel'
 import { findBrand } from '@/api/home'
 import { useLazyData } from '@/hocks'
 export default {
   name: 'HomeBrand',
   components: { HomePanel },
   setup () {
+    // 获取数据
     // const brands = ref([])
     // findBrand(10).then(data => {
     //   brands.value = data.result
     // })
-    const { result, target } = useLazyData(() => findBrand(10))
+    // 注意：useLazyData需要的是API函数，如果遇到要传参的情况，自己写函数再函数中调用API
+    const { target, result } = useLazyData(() => findBrand(10))
 
+    // 切换效果，前提只有 0 1 两页
     const index = ref(0)
+    // 1. 点击上一页
+    // 2. 点击下一页
     const toggle = (step) => {
       const newIndex = index.value + step
       if (newIndex < 0 || newIndex > 1) return
@@ -48,6 +53,16 @@ export default {
 </script>
 
 <style scoped lang='less'>
+.skeleton {
+  width: 100%;
+  display: flex;
+  .item {
+    margin-right: 10px;
+    &:nth-child(5n) {
+      margin-right: 0;
+    }
+  }
+}
 .home-panel {
   background:#f5f5f5
 }
@@ -90,19 +105,6 @@ export default {
         width: 240px;
         height: 305px;
       }
-    }
-  }
-}
-.fade{
-  &-leave {
-    &-active {
-      position: absolute;
-      width: 100%;
-      transition: opacity .5s .2s;
-      z-index: 1;
-    }
-    &-to {
-      opacity: 0;
     }
   }
 }

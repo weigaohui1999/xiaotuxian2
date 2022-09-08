@@ -1,6 +1,6 @@
 <template>
-  <div class="app-header-sticky" :class="{show: y >= 78}">
-    <div class="container" :class="{show: y >= 78}">
+  <div class="app-header-sticky" :class="{show:y>=78}">
+    <div class="container" v-show="y>=78">
       <RouterLink class="logo" to="/" />
       <AppHeaderNav />
       <div class="right">
@@ -12,23 +12,29 @@
 </template>
 
 <script>
-import AppHeaderNav from './app-header-nav'
-import { useWindowScroll } from '@vueuse/core'
 // import { onMounted, ref } from 'vue'
+import { useWindowScroll } from '@vueuse/core'
+import AppHeaderNav from './app-header-nav'
 export default {
   name: 'AppHeaderSticky',
   components: { AppHeaderNav },
   setup () {
-    // const y = ref(0)
-    // onMounted(() => {
-    //   window.onscroll = () => {
-    //     y.value = document.documentElement.scrollTop
-    //   }
-    // })
     const { y } = useWindowScroll()
-
     return { y }
   }
+  // setup () {
+  //   // 记录y轴卷曲的高度
+  //   const y = ref(0)
+  //   // 当你页面滚动的时候更新它
+  //   onMounted(() => {
+  //     window.onscroll = () => {
+  //       const scrollTop = document.documentElement.scrollTop
+  //       y.value = scrollTop
+  //     }
+  //   })
+  //   // 提供y给模版
+  //   return { y }
+  // }
 }
 </script>
 
